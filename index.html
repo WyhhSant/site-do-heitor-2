@@ -578,7 +578,7 @@
       document.getElementById('btnEstrela').addEventListener('click', () => mostrarTopologia('estrela'));
       document.getElementById('btnBarramento').addEventListener('click', () => mostrarTopologia('barramento'));
 
-      // --- Sistema de leitura em voz alta com toggle ---
+      // ========== SISTEMA DE LEITURA EM VOZ ALTA MELHORADO ==========
       const synth = window.speechSynthesis;
       let currentUtterance = null;
       let activeButton = null;
@@ -593,25 +593,90 @@
         }
       }
 
+      // Extrai apenas o texto relevante, ignorando botões, tooltips e SVGs
+      function extrairTextoSomente(elemento) {
+        // Clona o conteúdo para não alterar o DOM original
+        const clone = elemento.cloneNode(true);
+        // Remove botões, tooltips e SVGs da cópia
+        const removeSelectors = 'button, [data-tooltip], svg, .card-check';
+        clone.querySelectorAll(removeSelectors).forEach(el => el.remove());
+        // Remove os textos dos tooltips que são adicionados como atributo
+        let texto = clone.innerText || clone.textContent || '';
+        // Limpa espaços extras e caracteres que atrapalham a leitura
+        texto = texto.replace(/\s+/g, ' ').trim();
+        // Adiciona pausas após pontuações
+        texto = texto.replace(/\./g, '. ');
+        texto = texto.replace(/\n/g, ' ');
+        return texto;
+      }
+
       function toggleSpeech(button, contentElement) {
+        // Se já está falando e clicou no mesmo botão → parar
         if (synth.speaking && activeButton === button) {
           stopSpeaking();
           return;
         }
 
+        // Se algo está falando, para antes de iniciar novo
         stopSpeaking();
 
-        const text = contentElement.innerText || contentElement.textContent;
-        if (!text.trim()) return;
+        const textoLimpo = extrairTextoSomente(contentElement);
+        if (!textoLimpo.trim()) return;
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(textoLimpo);
         utterance.lang = 'pt-BR';
+
+        // Configurações para uma voz mais natural
+        utterance.rate = 0.95;   // Levemente mais lento que o padrão
+        utterance.pitch = 1.0;   // Tom normal
+        utterance.volume = 1;    // Volume máximo
+
+        // Tenta selecionar a melhor voz disponível em português brasileiro
+        function definirMelhorVoz() {
+          const vozes = synth.getVoices();
+          if (vozes.length === 0) return;
+
+          // Prioridade: vozes nativas do Google (ou Microsoft) em português brasileiro
+          const prioridade = [
+            'Google português brasileiro',
+            'Microsoft Maria',
+            'Microsoft Zira',
+            'Google português'
+          ];
+
+          let melhorVoz = null;
+          for (const nome of prioridade) {
+            melhorVoz = vozes.find(v => v.name.includes(nome) && v.lang === 'pt-BR');
+            if (melhorVoz) break;
+          }
+
+          // Se não encontrou nenhuma com o nome, tenta qualquer pt-BR
+          if (!melhorVoz) {
+            melhorVoz = vozes.find(v => v.lang === 'pt-BR');
+          }
+
+          if (melhorVoz) {
+            utterance.voice = melhorVoz;
+          }
+        }
+
+        // As vozes podem não estar carregadas imediatamente
+        if (synth.getVoices().length === 0) {
+          synth.onvoiceschanged = () => {
+            definirMelhorVoz();
+            synth.speak(utterance);
+          };
+        } else {
+          definirMelhorVoz();
+        }
+
         utterance.onend = () => {
           if (activeButton === button) {
             button.innerHTML = '🔊 Ouvir';
             activeButton = null;
           }
         };
+
         utterance.onerror = () => {
           if (activeButton === button) {
             button.innerHTML = '🔊 Ouvir';
@@ -622,7 +687,11 @@
         currentUtterance = utterance;
         activeButton = button;
         button.innerHTML = '⏹️ Parar';
-        synth.speak(utterance);
+
+        // Pequeno delay para garantir que a voz foi definida
+        setTimeout(() => {
+          synth.speak(utterance);
+        }, 50);
       }
 
       ouvirCaboBtn.addEventListener('click', (e) => {
