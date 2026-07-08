@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guia Visual de Redes para Automação</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'beige': '#f9f6f0',
+            'sand': '#e8d9c8',
+            'brown': '#a67c52',
+            'brown-dark': '#5e4634',
+            'sage': '#b7c9a8',
+            'sage-dark': '#8fa382',
+            'dark-bg': '#1e1b18',
+            'dark-card': '#2c2824',
+            'dark-border': '#3e3934',
+            'dark-text': '#e0d7cf',
+            'dark-accent': '#c7a17b',
+            'dark-sage': '#7f9a7a',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* ---------- Estilos gerais ---------- */
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -8px rgba(94, 70, 52, 0.25);
+    }
+    .dark .card-hover:hover {
+      box-shadow: 0 12px 24px -8px rgba(0,0,0,0.6);
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Abas */
+    .tab-active {
+      background-color: #b7c9a8;
+      color: #5e4634;
+      box-shadow: 0 4px 12px rgba(94, 70, 52, 0.15);
+      border: 1px solid #b7c9a8;
+    }
+    .dark .tab-active {
+      background-color: #7f9a7a;
+      color: #1e1b18;
+      border-color: #7f9a7a;
+    }
+    .tab-inactive {
+      background-color: #e8d9c8;
+      color: #5e4634;
+      border: 1px solid #e8d9c8;
+    }
+    .dark .tab-inactive {
+      background-color: #3e3934;
+      color: #e0d7cf;
+      border-color: #3e3934;
+    }
+    .tab-inactive:hover {
+      background-color: #d4c4b0;
+    }
+    .dark .tab-inactive:hover {
+      background-color: #4a443e;
+    }
+
+    /* Progresso */
+    .progress-bar {
+      transition: width 0.4s ease;
+    }
+
+    /* Quiz */
+    .quiz-option {
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 2px solid #e8d9c8;
+    }
+    .dark .quiz-option {
+      border-color: #3e3934;
+    }
+    .quiz-option:hover {
+      border-color: #b7c9a8;
+      background-color: #f0f7ed;
+    }
+    .dark .quiz-option:hover {
+      border-color: #7f9a7a;
+      background-color: #2a3327;
+    }
+    .quiz-option.correct {
+      border-color: #10b981 !important;
+      background-color: #d1fae5 !important;
+    }
+    .dark .quiz-option.correct {
+      background-color: #064e3b !important;
+    }
+    .quiz-option.wrong {
+      border-color: #ef4444 !important;
+      background-color: #fee2e2 !important;
+    }
+    .dark .quiz-option.wrong {
+      background-color: #7f1d1d !important;
+    }
+
+    /* Tabela */
+    .comparacao-table th, .comparacao-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #e8d9c8;
+    }
+    .dark .comparacao-table th, .dark .comparacao-table td {
+      border-bottom-color: #3e3934;
+    }
+
+    /* Tooltip */
+    [data-tooltip] {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted currentColor;
+    }
+    [data-tooltip]:after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #5e4634;
+      color: #f9f6f0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 100;
+    }
+    [data-tooltip]:hover:after {
+      opacity: 1;
+    }
+
+    /* Marca de concluído no card */
+    .card-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: #b7c9a8;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #5e4634;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .card-check.visible {
+      opacity: 1;
+    }
+
+    /* Animações SVG */
+    @keyframes pulse {
+      0% { r: 15; }
+      50% { r: 18; }
+      100% { r: 15; }
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: -20; }
+    }
+    .svg-node {
+      animation: pulse 2s infinite;
+    }
+    .svg-line-animated {
+      stroke-dasharray: 4;
+      animation: dash 1s linear infinite;
+    }
+
+    /* Impressão */
+    @media print {
+      header, nav, footer, #btnTopo, .quiz-section, .progress-container, button, #darkToggle {
+        display: none !important;
+      }
+      body { background: white; color: black; }
+      .card-hover, .card-hover:hover { transform: none; box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="bg-beige dark:bg-dark-bg text-brown-dark dark:text-dark-text font-sans antialiased transition-colors duration-300">
+
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="bg-gradient-to-r from-sand via-beige to-sand dark:from-dark-card dark:via-dark-bg dark:to-dark-card p-6 md:p-10 shadow-md border-b border-sand dark:border-dark-border">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between">
+      <div>
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight text-brown-dark dark:text-dark-accent">
+          ⚡ Guia Visual de Redes para Automação
+        </h1>
+        <p class="mt-3 text-lg md:text-xl text-brown-dark/80 dark:text-dark-text/80 max-w-3xl">
+          Entenda os meios de transmissão e as topologias que garantem comunicação confiável no chão de fábrica.
+        </p>
+      </div>
+      <div class="flex items-center gap-2 mt-4 md:mt-0">
+        <button id="darkToggle" class="px-4 py-2 bg-white dark:bg-dark-card border border-sand dark:border-dark-border rounded-full text-sm font-medium shadow-sm hover:shadow transition flex items-center gap-2">
+          <span id="darkIcon">🌙</span>
+          <span id="darkLabel">Modo escuro</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== NAVEGAÇÃO POR ABAS ========== -->
+  <nav class="flex justify-center space-x-4 my-8 px-4 flex-wrap gap-y-2" role="tablist">
+    <button id="tabCabos" role="tab" aria-selected="true"
+            class="tab-active px-6 py-3 rounded-full font-semibold text-sm md:text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sage dark:focus:ring-dark-sage focus:ring-offset-2">
+      🔌 Cabos Industriais
+    </button>
+    <button id="tabTopologias" role="tab" aria-selected="false"
+            class="tab-inactive px-6 py-3 rounded-full font-semibold text-sm md:text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sage dark:focus:ring-dark-sage focus:ring-offset-2">
+      🕸️ Topologias
+    </button>
+    <button id="tabProtocolos" role="tab" aria-selected="false"
+            class="tab-inactive px-6 py-3 rounded-full font-semibold text-sm md:text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sage dark:focus:ring-dark-sage focus:ring-offset-2">
+      📡 Protocolos
+    </button>
+  </nav>
+
+  <!-- ========== INDICADOR DE PROGRESSO ========== -->
+  <div class="progress-container max-w-6xl mx-auto px-4 mb-6">
+    <div class="w-full bg-sand dark:bg-dark-border rounded-full h-2 overflow-hidden">
+      <div id="progressBar" class="progress-bar bg-sage dark:bg-dark-sage h-full rounded-full" style="width: 0%"></div>
+    </div>
+    <p id="progressLabel" class="text-xs text-center mt-1 text-brown-dark/60 dark:text-dark-text/60">Explore os conteúdos</p>
+  </div>
+
+  <!-- ========== CONTEÚDO PRINCIPAL ========== -->
+  <main class="max-w-6xl mx-auto px-4 pb-16">
+
+    <!-- ========== SEÇÃO CABOS ========== -->
+    <section id="sectionCabos" class="space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article data-cabo="par-trancado" class="relative card-hover bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md cursor-pointer border border-sand dark:border-dark-border hover:border-sage dark:hover:border-dark-sage" tabindex="0">
+          <div class="card-check" id="check-par-trancado">✓</div>
+          <div class="text-4xl mb-3">🔌</div>
+          <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent">Par Trançado</h3>
+          <p class="text-brown-dark/70 dark:text-dark-text/70 text-sm mt-1">Cobre • RJ45 industrial • Até 100 m</p>
+          <span class="inline-block mt-4 text-sage-dark dark:text-dark-sage text-sm font-medium">Clique para detalhes →</span>
+        </article>
+        <article data-cabo="fibra-optica" class="relative card-hover bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md cursor-pointer border border-sand dark:border-dark-border hover:border-sage dark:hover:border-dark-sage" tabindex="0">
+          <div class="card-check" id="check-fibra-optica">✓</div>
+          <div class="text-4xl mb-3">🔦</div>
+          <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent">Fibra Óptica</h3>
+          <p class="text-brown-dark/70 dark:text-dark-text/70 text-sm mt-1">Vidro/Plástico • Imune a <span data-tooltip="Interferência Eletromagnética">EMI</span> • Longas distâncias</p>
+          <span class="inline-block mt-4 text-sage-dark dark:text-dark-sage text-sm font-medium">Clique para detalhes →</span>
+        </article>
+        <article data-cabo="wireless" class="relative card-hover bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md cursor-pointer border border-sand dark:border-dark-border hover:border-sage dark:hover:border-dark-sage" tabindex="0">
+          <div class="card-check" id="check-wireless">✓</div>
+          <div class="text-4xl mb-3">📡</div>
+          <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent">Wireless</h3>
+          <p class="text-brown-dark/70 dark:text-dark-text/70 text-sm mt-1">Rádio • Wi‑Fi 6 / 5G privado • Mobilidade</p>
+          <span class="inline-block mt-4 text-sage-dark dark:text-dark-sage text-sm font-medium">Clique para detalhes →</span>
+        </article>
+      </div>
+
+      <div id="explicacaoCabo" class="hidden fade-in bg-white dark:bg-dark-card rounded-2xl p-6 md:p-8 shadow-lg border-l-4 border-sage dark:border-dark-sage relative">
+        <button id="ouvirCaboBtn" class="absolute top-4 right-4 text-sm bg-sage/30 dark:bg-dark-sage/30 px-3 py-1 rounded-full hover:bg-sage/50 transition">🔊 Ouvir</button>
+        <div id="conteudoExplicacaoCabo" class="prose prose-brown dark:text-dark-text max-w-none"></div>
+      </div>
+
+      <div class="comparacao-section bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md border border-sand dark:border-dark-border">
+        <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-4">📊 Comparação rápida dos meios de transmissão</h3>
+        <div class="overflow-x-auto">
+          <table class="comparacao-table w-full text-sm text-left">
+            <thead class="bg-sand/50 dark:bg-dark-border/50">
+              <tr><th class="font-semibold">Característica</th><th class="font-semibold">Par Trançado</th><th class="font-semibold">Fibra Óptica</th><th class="font-semibold">Wireless</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Custo relativo</td><td>💰 Baixo</td><td>💰💰 Médio/Alto</td><td>💰💰 Médio</td></tr>
+              <tr><td>Distância máxima</td><td>100 m (cobre)</td><td>Até 40 km (monomodo)</td><td>~100 m (Wi‑Fi interno)</td></tr>
+              <tr><td>Imunidade a <span data-tooltip="Interferência Eletromagnética">EMI</span></td><td>Média (blindado)</td><td>Total</td><td>Baixa (suscetível)</td></tr>
+              <tr><td>Taxa de dados típica</td><td>1 Gb/s (CAT6)</td><td>10 Gb/s ou mais</td><td>Até 9.6 Gb/s (Wi‑Fi 6)</td></tr>
+              <tr><td>Mobilidade</td><td>❌</td><td>❌</td><td>✅</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="quiz-section bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md border border-sand dark:border-dark-border">
+        <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-4">🧠 Teste seus conhecimentos — Cabos</h3>
+        <div id="quizCabosContainer" class="space-y-6"></div>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO TOPOLOGIAS ========== -->
+    <section id="sectionTopologias" class="hidden space-y-8">
+      <div class="flex flex-wrap justify-center gap-4">
+        <button id="btnEstrela" class="px-8 py-4 bg-brown dark:bg-dark-accent text-white font-bold rounded-xl shadow-md hover:bg-brown-dark dark:hover:bg-brown transition-all duration-300 text-lg">⭐ Layout em Estrela</button>
+        <button id="btnBarramento" class="px-8 py-4 bg-white dark:bg-dark-card border-2 border-brown dark:border-dark-accent text-brown dark:text-dark-accent font-bold rounded-xl shadow-md hover:bg-sand dark:hover:bg-dark-border transition-all duration-300 text-lg">➖ Layout em Barramento</button>
+      </div>
+
+      <div id="detalhesTopologia" class="hidden fade-in bg-white dark:bg-dark-card rounded-2xl p-6 md:p-8 shadow-lg border-l-4 border-sage dark:border-dark-sage relative">
+        <button id="ouvirTopoBtn" class="absolute top-4 right-4 text-sm bg-sage/30 dark:bg-dark-sage/30 px-3 py-1 rounded-full hover:bg-sage/50 transition">🔊 Ouvir</button>
+        <div id="conteudoTopologia" class="prose prose-brown dark:text-dark-text max-w-none"></div>
+        <div id="svgContainer" class="mt-6 flex justify-center"></div>
+      </div>
+
+      <div class="quiz-section bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md border border-sand dark:border-dark-border">
+        <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-4">🧠 Teste seus conhecimentos — Topologias</h3>
+        <div id="quizTopologiasContainer" class="space-y-6"></div>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO PROTOCOLOS ========== -->
+    <section id="sectionProtocolos" class="hidden space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article data-protocolo="profinet" class="relative card-hover bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md cursor-pointer border border-sand dark:border-dark-border hover:border-sage dark:hover:border-dark-sage" tabindex="0">
+          <div class="card-check" id="check-profinet">✓</div>
+          <div class="text-4xl mb-3">🏭</div>
+          <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent">PROFINET</h3>
+          <p class="text-brown-dark/70 dark:text-dark-text/70 text-sm mt-1">Ethernet industrial • Tempo real</p>
+          <span class="inline-block mt-4 text-sage-dark dark:text-dark-sage text-sm font-medium">Clique para detalhes →</span>
+        </article>
+        <article data-protocolo="ethernet-ip" class="relative card-hover bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md cursor-pointer border border-sand dark:border-dark-border hover:border-sage dark:hover:border-dark-sage" tabindex="0">
+          <div class="card-check" id="check-ethernet-ip">✓</div>
+          <div class="text-4xl mb-3">🌐</div>
+          <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent">EtherNet/IP</h3>
+          <p class="text-brown-dark/70 dark:text-dark-text/70 text-sm mt-1">CIP sobre TCP/IP • Ampla adoção</p>
+          <span class="inline-block mt-4 text-sage-dark dark:text-dark-sage text-sm font-medium">Clique para detalhes →</span>
+        </article>
+        <article data-protocolo="modbus-tcp" class="relative card-hover bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md cursor-pointer border border-sand dark:border-dark-border hover:border-sage dark:hover:border-dark-sage" tabindex="0">
+          <div class="card-check" id="check-modbus-tcp">✓</div>
+          <div class="text-4xl mb-3">📜</div>
+          <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent">Modbus TCP</h3>
+          <p class="text-brown-dark/70 dark:text-dark-text/70 text-sm mt-1">Simples • Legado • Aberto</p>
+          <span class="inline-block mt-4 text-sage-dark dark:text-dark-sage text-sm font-medium">Clique para detalhes →</span>
+        </article>
+      </div>
+
+      <div id="explicacaoProtocolo" class="hidden fade-in bg-white dark:bg-dark-card rounded-2xl p-6 md:p-8 shadow-lg border-l-4 border-sage dark:border-dark-sage relative">
+        <button id="ouvirProtoBtn" class="absolute top-4 right-4 text-sm bg-sage/30 dark:bg-dark-sage/30 px-3 py-1 rounded-full hover:bg-sage/50 transition">🔊 Ouvir</button>
+        <div id="conteudoExplicacaoProtocolo" class="prose prose-brown dark:text-dark-text max-w-none"></div>
+      </div>
+
+      <div class="quiz-section bg-white dark:bg-dark-card rounded-2xl p-6 shadow-md border border-sand dark:border-dark-border">
+        <h3 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-4">🧠 Teste seus conhecimentos — Protocolos</h3>
+        <div id="quizProtocolosContainer" class="space-y-6"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="text-center text-brown-dark/50 dark:text-dark-text/50 text-sm py-6 border-t border-sand dark:border-dark-border">
+    Guia Visual de Redes para Automação • Conteúdo técnico educacional • Projeto open-source
+  </footer>
+
+  <button id="btnTopo" class="fixed bottom-6 right-6 bg-brown dark:bg-dark-accent text-white p-3 rounded-full shadow-lg opacity-0 pointer-events-none transition-all hover:bg-brown-dark dark:hover:bg-brown z-50" aria-label="Voltar ao topo">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+  </button>
+
+  <script>
+    (function() {
+      // Elementos UI
+      const tabCabos = document.getElementById('tabCabos');
+      const tabTopologias = document.getElementById('tabTopologias');
+      const tabProtocolos = document.getElementById('tabProtocolos');
+      const sectionCabos = document.getElementById('sectionCabos');
+      const sectionTopologias = document.getElementById('sectionTopologias');
+      const sectionProtocolos = document.getElementById('sectionProtocolos');
+      const explicacaoCabo = document.getElementById('explicacaoCabo');
+      const conteudoExplicacaoCabo = document.getElementById('conteudoExplicacaoCabo');
+      const explicacaoProtocolo = document.getElementById('explicacaoProtocolo');
+      const conteudoExplicacaoProtocolo = document.getElementById('conteudoExplicacaoProtocolo');
+      const detalhesTopologia = document.getElementById('detalhesTopologia');
+      const conteudoTopologia = document.getElementById('conteudoTopologia');
+      const svgContainer = document.getElementById('svgContainer');
+      const progressBar = document.getElementById('progressBar');
+      const progressLabel = document.getElementById('progressLabel');
+      const darkToggle = document.getElementById('darkToggle');
+      const darkIcon = document.getElementById('darkIcon');
+      const darkLabel = document.getElementById('darkLabel');
+      const btnTopo = document.getElementById('btnTopo');
+
+      // Botões de TTS
+      const ouvirCaboBtn = document.getElementById('ouvirCaboBtn');
+      const ouvirTopoBtn = document.getElementById('ouvirTopoBtn');
+      const ouvirProtoBtn = document.getElementById('ouvirProtoBtn');
+
+      // Conteúdos dos cabos (com tooltips)
+      const explicacoesCabos = {
+        'par-trancado': `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">🔌 Cabo de Par Trançado</h4><p class="mb-3">O par trançado (cobre) é o meio mais difundido, especialmente nas variantes blindadas <strong>STP/FTP</strong> (CAT6, CAT6A ou CAT7). Suporta protocolos como <span data-tooltip="Process Field Network">PROFINET</span>, <span data-tooltip="Ethernet Industrial Protocol">EtherNet/IP</span> e <span data-tooltip="Modbus sobre TCP/IP">Modbus TCP</span>.</p><p class="mb-3"><strong>Por que é usado:</strong></p><ul class="list-disc pl-5 space-y-2 mb-4"><li><strong>Custo-benefício:</strong> Conectores RJ45 industriais (IP67) baratos e fáceis de instalar.</li><li><strong>Distância:</strong> Até 100 m entre switch e dispositivo.</li><li><strong>Blindagem:</strong> Protege contra interferências de motores e inversores.</li><li><strong><span data-tooltip="Power over Ethernet">PoE</span>:</strong> Alimenta câmeras e sensores pelo mesmo cabo.</li></ul><p class="text-sm italic">Limitação: Suscetível a EMI se a blindagem não for aterrada corretamente.</p>`,
+        'fibra-optica': `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">🔦 Fibra Óptica</h4><p class="mb-3">A fibra óptica (vidro/plástico) é a escolha para <strong>backbones industriais</strong> e ambientes com extrema poluição eletromagnética. Monomodo (longas distâncias, laser) ou multimodo (médias, LED).</p><p class="mb-3"><strong>Por que é usada:</strong></p><ul class="list-disc pl-5 space-y-2 mb-4"><li><strong>Imunidade total a <span data-tooltip="Interferência Eletromagnética">EMI</span>/<span data-tooltip="Interferência de Radiofrequência">RFI</span>:</strong> Ideal perto de fornos e máquinas de solda.</li><li><strong>Longas distâncias:</strong> Liga galpões a quilômetros sem repetidores.</li><li><strong>Isolação elétrica:</strong> Evita loops de terra.</li><li><strong>Largura de banda:</strong> 10 Gb/s ou mais para Indústria 4.0.</li></ul><p class="text-sm italic">Atenção: Requer switches com portas SFP e limpeza dos conectores.</p>`,
+        'wireless': `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">📡 Wireless Industrial</h4><p class="mb-3">Comunicações sem fio usando <strong>Wi‑Fi 6 (802.11ax)</strong> e <strong>5G privado</strong>. Essenciais para dispositivos móveis.</p><p class="mb-3"><strong>Por que é usado:</strong></p><ul class="list-disc pl-5 space-y-2 mb-4"><li><strong>Mobilidade:</strong> <span data-tooltip="Veículos Guiados Automaticamente">AGVs</span>, robôs móveis e tablets de manutenção.</li><li><strong>Flexibilidade:</strong> Reconfiguração de layout sem cabos.</li><li><strong>Áreas restritas:</strong> Equipamentos rotativos onde cabos não chegam.</li></ul><p class="text-sm italic">Desafios: Latência não determinística e necessidade de planejamento de RF.</p>`
+      };
+
+      // Conteúdos das topologias (com SVG animado)
+      const detalhesTopologias = {
+        estrela: {
+          texto: `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">⭐ Topologia Estrela</h4><p class="mb-4">Todos os dispositivos conectados a um <strong>switch central</strong>. Arquitetura dominante em Ethernet industrial.</p><div class="grid md:grid-cols-2 gap-6 mt-4"><div class="bg-sage/20 dark:bg-dark-sage/20 rounded-xl p-4 border border-sage dark:border-dark-sage"><h5 class="font-bold">✅ Vantagens</h5><ul class="list-disc pl-5 space-y-2 text-sm"><li><strong>Isolação de falhas:</strong> Cabo rompido afeta só um dispositivo.</li><li><strong>Diagnóstico simples:</strong> Switch identifica porta com problema.</li><li><strong><span data-tooltip="Comunicação simultânea nos dois sentidos">Full‑duplex</span>:</strong> Banda dedicada, sem colisões.</li></ul></div><div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800"><h5 class="font-bold text-red-800 dark:text-red-400">⚠️ Desvantagens</h5><ul class="list-disc pl-5 space-y-2 text-sm text-red-900 dark:text-red-300"><li><strong>Custo de cabeamento:</strong> Cada dispositivo exige cabo próprio.</li><li><strong>Switch crítico:</strong> Falha do switch paralisa a célula.</li></ul></div></div>`,
+          svg: `<svg viewBox="0 0 300 200" class="w-full max-w-md h-auto"><circle cx="150" cy="100" r="25" fill="#b7c9a8" stroke="#5e4634" stroke-width="2" class="svg-node"/><text x="150" y="105" text-anchor="middle" fill="#5e4634" font-size="12">Switch</text><circle cx="50" cy="40" r="15" fill="#e8d9c8" stroke="#5e4634" stroke-width="2"/><text x="50" y="45" text-anchor="middle" fill="#5e4634" font-size="8">PLC</text><line x1="130" y1="85" x2="62" y2="48" stroke="#5e4634" stroke-width="2" class="svg-line-animated"/><circle cx="250" cy="40" r="15" fill="#e8d9c8" stroke="#5e4634" stroke-width="2"/><text x="250" y="45" text-anchor="middle" fill="#5e4634" font-size="8">IHM</text><line x1="170" y1="85" x2="238" y2="48" stroke="#5e4634" stroke-width="2" class="svg-line-animated"/><circle cx="50" cy="160" r="15" fill="#e8d9c8" stroke="#5e4634" stroke-width="2"/><text x="50" y="165" text-anchor="middle" fill="#5e4634" font-size="8">Drive</text><line x1="130" y1="115" x2="62" y2="152" stroke="#5e4634" stroke-width="2" class="svg-line-animated"/><circle cx="250" cy="160" r="15" fill="#e8d9c8" stroke="#5e4634" stroke-width="2"/><text x="250" y="165" text-anchor="middle" fill="#5e4634" font-size="8">Sensor</text><line x1="170" y1="115" x2="238" y2="152" stroke="#5e4634" stroke-width="2" class="svg-line-animated"/></svg>`
+        },
+        barramento: {
+          texto: `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">➖ Topologia Barramento</h4><p class="mb-4">Dispositivos compartilham um único cabo tronco, com derivações curtas. Exemplos: <strong>PROFIBUS, CANopen, DeviceNet</strong>.</p><div class="grid md:grid-cols-2 gap-6 mt-4"><div class="bg-sage/20 dark:bg-dark-sage/20 rounded-xl p-4 border border-sage dark:border-dark-sage"><h5 class="font-bold">✅ Vantagens</h5><ul class="list-disc pl-5 space-y-2 text-sm"><li><strong>Menor custo:</strong> Um único cabo percorre todos os nós.</li><li><strong>Simplicidade:</strong> Instalação linear.</li><li><strong>Alcance:</strong> Até 1,2 km com repetidores.</li></ul></div><div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800"><h5 class="font-bold text-red-800 dark:text-red-400">⚠️ Desvantagens</h5><ul class="list-disc pl-5 space-y-2 text-sm text-red-900 dark:text-red-300"><li><strong>Ponto único de falha:</strong> Rompimento do tronco derruba a rede.</li><li><strong>Exige <span data-tooltip="Resistores nas extremidades para casar impedância">terminadores</span>:</strong> Evitam reflexões de sinal.</li></ul></div></div>`,
+          svg: `<svg viewBox="0 0 300 120" class="w-full max-w-md h-auto"><line x1="20" y1="60" x2="280" y2="60" stroke="#5e4634" stroke-width="4" class="svg-line-animated"/><circle cx="40" cy="60" r="10" fill="#b7c9a8" stroke="#5e4634" stroke-width="2" class="svg-node"/><text x="40" y="85" text-anchor="middle" fill="#5e4634" font-size="9">PLC</text><circle cx="120" cy="60" r="10" fill="#b7c9a8" stroke="#5e4634" stroke-width="2"/><text x="120" y="85" text-anchor="middle" fill="#5e4634" font-size="9">IHM</text><circle cx="200" cy="60" r="10" fill="#b7c9a8" stroke="#5e4634" stroke-width="2"/><text x="200" y="85" text-anchor="middle" fill="#5e4634" font-size="9">Drive</text><circle cx="260" cy="60" r="10" fill="#b7c9a8" stroke="#5e4634" stroke-width="2"/><text x="260" y="85" text-anchor="middle" fill="#5e4634" font-size="9">Sensor</text><rect x="10" y="50" width="10" height="20" fill="#a67c52"/><rect x="280" y="50" width="10" height="20" fill="#a67c52"/></svg>`
+        }
+      };
+
+      // Conteúdos dos protocolos
+      const explicacoesProtocolos = {
+        'profinet': `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">🏭 PROFINET</h4><p class="mb-3">Padrão Ethernet industrial da <strong>PI (Profibus & Profinet International)</strong>. Usa <span data-tooltip="Industrial Ethernet">IEEE 802.3</span> com extensões para tempo real.</p><p class="mb-3"><strong>Destaques:</strong></p><ul class="list-disc pl-5 space-y-2 mb-4"><li><strong>Tempo real (RT/IRT):</strong> Comunicação determinística para controle de movimento.</li><li><strong>Integração:</strong> Conecta PLCs, drives, I/Os e IHMs no mesmo cabo.</li><li><strong>Topologias flexíveis:</strong> Estrela, anel, linha.</li></ul><p class="text-sm italic">Muito usado na indústria automotiva e de máquinas-ferramenta.</p>`,
+        'ethernet-ip': `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">🌐 EtherNet/IP</h4><p class="mb-3">Implementa o protocolo <strong>CIP (Common Industrial Protocol)</strong> sobre TCP/IP. Mantido pela ODVA.</p><p class="mb-3"><strong>Destaques:</strong></p><ul class="list-disc pl-5 space-y-2 mb-4"><li><strong>Ampla adoção:</strong> Grande base instalada, especialmente nos EUA.</li><li><strong>CIP Sync:</strong> Sincronização de tempo para aplicações de movimento.</li><li><strong>Topologia em estrela:</strong> Cada dispositivo conectado a um switch.</li></ul><p class="text-sm italic">Compatível com infraestrutura Ethernet padrão, mas exige switches industriais para desempenho.</p>`,
+        'modbus-tcp': `<h4 class="text-xl font-bold text-brown-dark dark:text-dark-accent mb-3">📜 Modbus TCP</h4><p class="mb-3">Evolução do clássico Modbus RTU, encapsulado em TCP/IP. Aberto e simples, mantido pela Modbus Organization.</p><p class="mb-3"><strong>Destaques:</strong></p><ul class="list-disc pl-5 space-y-2 mb-4"><li><strong>Simplicidade:</strong> Fácil de implementar e depurar.</li><li><strong>Interoperabilidade:</strong> Conecta dispositivos de diferentes fabricantes.</li><li><strong>Custo zero:</strong> Sem royalties ou licenças.</li></ul><p class="text-sm italic">Ideal para leitura de registradores e comandos simples, mas sem recursos avançados de diagnóstico.</p>`
+      };
+
+      // Quizzes
+      const quizCabosData = [
+        { pergunta: "Qual meio é totalmente imune a EMI?", opcoes: ["Par Trançado", "Fibra Óptica", "Wireless", "Coaxial"], correta: 1, explicacao: "Fibra óptica usa luz, imune a interferência eletromagnética." },
+        { pergunta: "Qual a distância máxima do par trançado (cobre)?", opcoes: ["10 m", "50 m", "100 m", "500 m"], correta: 2, explicacao: "100 metros entre dispositivos ativos." },
+        { pergunta: "O que significa PoE?", opcoes: ["Power over Ethernet", "Protocol over Ethernet", "Pulse on Edge", "Priority of Ethernet"], correta: 0, explicacao: "Power over Ethernet: alimentação pelo cabo de rede." },
+        { pergunta: "Qual meio é ideal para AGVs?", opcoes: ["Par Trançado", "Fibra Óptica", "Wireless", "RS-485"], correta: 2, explicacao: "Wireless permite mobilidade total." }
+      ];
+      const quizTopologiasData = [
+        { pergunta: "Na estrela, o que ocorre se um cabo entre switch e dispositivo rompe?", opcoes: ["Toda a rede para", "Apenas aquele dispositivo perde conexão", "Os dados são corrompidos", "O switch desliga"], correta: 1, explicacao: "A falha isola apenas o dispositivo afetado." },
+        { pergunta: "Exemplo de protocolo que usa barramento:", opcoes: ["EtherNet/IP", "PROFINET", "PROFIBUS", "TCP/IP"], correta: 2, explicacao: "PROFIBUS, CANopen e DeviceNet usam barramento." },
+        { pergunta: "Principal desvantagem do barramento:", opcoes: ["Alto custo", "Ponto único de falha", "Difícil expansão", "Baixa imunidade"], correta: 1, explicacao: "Rompimento do tronco derruba toda a rede." },
+        { pergunta: "O que evita reflexões no barramento?", opcoes: ["Amplificadores", "Repetidores", "Terminadores", "Filtros"], correta: 2, explicacao: "Terminadores casam a impedância da linha." }
+      ];
+      const quizProtocolosData = [
+        { pergunta: "Qual protocolo é mantido pela ODVA?", opcoes: ["PROFINET", "EtherNet/IP", "Modbus TCP", "CANopen"], correta: 1, explicacao: "EtherNet/IP é mantido pela ODVA." },
+        { pergunta: "Qual protocolo é conhecido pela simplicidade e custo zero?", opcoes: ["PROFINET", "EtherNet/IP", "Modbus TCP", "PROFIBUS"], correta: 2, explicacao: "Modbus TCP é aberto e sem royalties." },
+        { pergunta: "PROFINET se destaca em:", opcoes: ["Simplicidade", "Tempo real determinístico", "Custo baixo", "Redes sem fio"], correta: 1, explicacao: "PROFINET RT/IRT oferece comunicação determinística." },
+        { pergunta: "Qual protocolo encapsula CIP sobre TCP/IP?", opcoes: ["PROFINET", "EtherNet/IP", "Modbus TCP", "DeviceNet"], correta: 1, explicacao: "EtherNet/IP transporta o protocolo CIP." }
+      ];
+
+      // Estado de progresso
+      let cabosClicados = new Set();
+      let topologiaVisualizada = false;
+      let protocolosClicados = new Set();
+
+      function updateProgress() {
+        let activeSection = 'cabos';
+        if (!sectionCabos.classList.contains('hidden')) activeSection = 'cabos';
+        else if (!sectionTopologias.classList.contains('hidden')) activeSection = 'topologias';
+        else if (!sectionProtocolos.classList.contains('hidden')) activeSection = 'protocolos';
+
+        let percentage = 0;
+        if (activeSection === 'cabos') {
+          percentage = Math.min(100, (cabosClicados.size / 3) * 100);
+          progressLabel.textContent = `${cabosClicados.size} de 3 cabos explorados`;
+        } else if (activeSection === 'topologias') {
+          percentage = topologiaVisualizada ? 100 : 0;
+          progressLabel.textContent = topologiaVisualizada ? 'Topologia estudada ✓' : 'Selecione uma topologia';
+        } else if (activeSection === 'protocolos') {
+          percentage = Math.min(100, (protocolosClicados.size / 3) * 100);
+          progressLabel.textContent = `${protocolosClicados.size} de 3 protocolos explorados`;
+        }
+        progressBar.style.width = percentage + '%';
+      }
+
+      function marcarCard(categoria, id) {
+        const check = document.getElementById(`check-${id}`);
+        if (check) check.classList.add('visible');
+      }
+
+      // Renderiza quiz
+      function renderQuiz(container, quizData) {
+        container.innerHTML = '';
+        quizData.forEach((q, index) => {
+          const questionDiv = document.createElement('div');
+          questionDiv.className = 'mb-4';
+          questionDiv.innerHTML = `<p class="font-semibold mb-2">${index+1}. ${q.pergunta}</p><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${q.opcoes.map((opcao, i) => `<div class="quiz-option p-3 rounded-lg bg-sand/30 dark:bg-dark-border/30" data-question="${index}" data-option="${i}">${opcao}</div>`).join('')}</div><p class="text-sm mt-1 hidden feedback" data-question="${index}"></p>`;
+          container.appendChild(questionDiv);
+        });
+        container.querySelectorAll('.quiz-option').forEach(opt => {
+          opt.addEventListener('click', function() {
+            const qIdx = parseInt(this.dataset.question);
+            const sel = parseInt(this.dataset.option);
+            const qData = quizData[qIdx];
+            const feedback = container.querySelector(`.feedback[data-question="${qIdx}"]`);
+            const allOpts = container.querySelectorAll(`.quiz-option[data-question="${qIdx}"]`);
+            if (this.classList.contains('correct') || this.classList.contains('wrong')) return;
+            allOpts.forEach(o => o.classList.remove('correct', 'wrong'));
+            if (sel === qData.correta) {
+              this.classList.add('correct');
+              feedback.textContent = '✅ Correto! ' + qData.explicacao;
+              feedback.className = 'text-sm mt-1 text-green-700 dark:text-green-400 feedback';
+            } else {
+              this.classList.add('wrong');
+              allOpts[qData.correta].classList.add('correct');
+              feedback.textContent = '❌ Incorreto. ' + qData.explicacao;
+              feedback.className = 'text-sm mt-1 text-red-600 dark:text-red-400 feedback';
+            }
+            feedback.classList.remove('hidden');
+          });
+        });
+      }
+
+      renderQuiz(document.getElementById('quizCabosContainer'), quizCabosData);
+      renderQuiz(document.getElementById('quizTopologiasContainer'), quizTopologiasData);
+      renderQuiz(document.getElementById('quizProtocolosContainer'), quizProtocolosData);
+
+      // Controle de abas
+      function ativarAba(aba) {
+        [tabCabos, tabTopologias, tabProtocolos].forEach(t => { t.classList.remove('tab-active'); t.classList.add('tab-inactive'); t.setAttribute('aria-selected', 'false'); });
+        sectionCabos.classList.add('hidden');
+        sectionTopologias.classList.add('hidden');
+        sectionProtocolos.classList.add('hidden');
+        detalhesTopologia.classList.add('hidden');
+        explicacaoCabo.classList.add('hidden');
+        explicacaoProtocolo.classList.add('hidden');
+
+        if (aba === 'cabos') {
+          tabCabos.classList.remove('tab-inactive'); tabCabos.classList.add('tab-active'); tabCabos.setAttribute('aria-selected', 'true');
+          sectionCabos.classList.remove('hidden');
+        } else if (aba === 'topologias') {
+          tabTopologias.classList.remove('tab-inactive'); tabTopologias.classList.add('tab-active'); tabTopologias.setAttribute('aria-selected', 'true');
+          sectionTopologias.classList.remove('hidden');
+        } else if (aba === 'protocolos') {
+          tabProtocolos.classList.remove('tab-inactive'); tabProtocolos.classList.add('tab-active'); tabProtocolos.setAttribute('aria-selected', 'true');
+          sectionProtocolos.classList.remove('hidden');
+        }
+        updateProgress();
+      }
+
+      tabCabos.addEventListener('click', () => ativarAba('cabos'));
+      tabTopologias.addEventListener('click', () => ativarAba('topologias'));
+      tabProtocolos.addEventListener('click', () => ativarAba('protocolos'));
+
+      // Eventos cards cabos
+      document.querySelectorAll('[data-cabo]').forEach(card => {
+        card.addEventListener('click', function() {
+          const cabo = this.dataset.cabo;
+          conteudoExplicacaoCabo.innerHTML = explicacoesCabos[cabo] || '';
+          explicacaoCabo.classList.remove('hidden');
+          explicacaoCabo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          cabosClicados.add(cabo);
+          marcarCard('cabos', cabo);
+          updateProgress();
+        });
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); } });
+      });
+
+      // Eventos cards protocolos
+      document.querySelectorAll('[data-protocolo]').forEach(card => {
+        card.addEventListener('click', function() {
+          const proto = this.dataset.protocolo;
+          conteudoExplicacaoProtocolo.innerHTML = explicacoesProtocolos[proto] || '';
+          explicacaoProtocolo.classList.remove('hidden');
+          explicacaoProtocolo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          protocolosClicados.add(proto);
+          marcarCard('protocolos', proto);
+          updateProgress();
+        });
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); } });
+      });
+
+      // Botões topologia
+      function mostrarTopologia(tipo) {
+        const dados = detalhesTopologias[tipo];
+        conteudoTopologia.innerHTML = dados.texto;
+        svgContainer.innerHTML = dados.svg;
+        detalhesTopologia.classList.remove('hidden');
+        detalhesTopologia.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        topologiaVisualizada = true;
+        updateProgress();
+      }
+      document.getElementById('btnEstrela').addEventListener('click', () => mostrarTopologia('estrela'));
+      document.getElementById('btnBarramento').addEventListener('click', () => mostrarTopologia('barramento'));
+
+      // --- Sistema de leitura em voz alta com toggle ---
+      const synth = window.speechSynthesis;
+      let currentUtterance = null;
+      let activeButton = null;
+
+      function stopSpeaking() {
+        if (synth.speaking) {
+          synth.cancel();
+        }
+        if (activeButton) {
+          activeButton.innerHTML = '🔊 Ouvir';
+          activeButton = null;
+        }
+      }
+
+      function toggleSpeech(button, contentElement) {
+        if (synth.speaking && activeButton === button) {
+          stopSpeaking();
+          return;
+        }
+
+        stopSpeaking();
+
+        const text = contentElement.innerText || contentElement.textContent;
+        if (!text.trim()) return;
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pt-BR';
+        utterance.onend = () => {
+          if (activeButton === button) {
+            button.innerHTML = '🔊 Ouvir';
+            activeButton = null;
+          }
+        };
+        utterance.onerror = () => {
+          if (activeButton === button) {
+            button.innerHTML = '🔊 Ouvir';
+            activeButton = null;
+          }
+        };
+
+        currentUtterance = utterance;
+        activeButton = button;
+        button.innerHTML = '⏹️ Parar';
+        synth.speak(utterance);
+      }
+
+      ouvirCaboBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSpeech(ouvirCaboBtn, conteudoExplicacaoCabo);
+      });
+      ouvirTopoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSpeech(ouvirTopoBtn, conteudoTopologia);
+      });
+      ouvirProtoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSpeech(ouvirProtoBtn, conteudoExplicacaoProtocolo);
+      });
+
+      // Botão voltar ao topo
+      window.addEventListener('scroll', () => {
+        btnTopo.classList.toggle('opacity-0', window.scrollY <= 400);
+        btnTopo.classList.toggle('pointer-events-none', window.scrollY <= 400);
+        btnTopo.classList.toggle('opacity-100', window.scrollY > 400);
+      });
+      btnTopo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // Dark mode
+      function setDarkMode(enable) {
+        if (enable) {
+          document.documentElement.classList.add('dark');
+          darkIcon.textContent = '☀️'; darkLabel.textContent = 'Modo claro';
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          darkIcon.textContent = '🌙'; darkLabel.textContent = 'Modo escuro';
+          localStorage.setItem('theme', 'light');
+        }
+      }
+      darkToggle.addEventListener('click', () => setDarkMode(!document.documentElement.classList.contains('dark')));
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) setDarkMode(true);
+
+      updateProgress();
+    })();
+  </script>
+</body>
+</html>
